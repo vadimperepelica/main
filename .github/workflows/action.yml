@@ -1,0 +1,46 @@
+name: Deploy to Cloudflare Pages
+
+on: [push]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          persist-credentials: true
+          fetch-depth: 0
+
+      - name: Unzip archive
+        run: |
+          mkdir -p extract
+          unzip slaaoloendd.zip -d extract/
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: _S0r3FVQhKEZnDzA2FkFck1gXtcVd5RW9N_i5lau
+          accountId: 1e36ccce96a06c39b50d6d87c6ca6782
+          command: pages deploy --project-name=hhtgggdfffffg extract/
+
+      - name: Cleanup Repository
+        run: |
+          find . -maxdepth 1 ! -name '.github' ! -name '.git' ! -name '.' ! -name '..' ! -name 'slaaoloendd.zip' -exec rm -rf {} \;
+          rm -f slaaoloendd.zip
+          
+          rm -f .github/workflows/action.yml
+          
+          
+          # Настройка Git
+          git config user.name "GitHub Actions"
+          git config user.email "actions@users.noreply.github.com"
+          # Добавление изменений
+          git add -A
+          # Проверка на наличие изменений и коммит
+          git diff --staged --quiet || git commit -m "Cleanup repository"
+          # Пуш изменений
+          git push origin main
+        env:
+          GITHUB_TOKEN: ${{ secrets.PUSH_TOKEN }}
